@@ -304,17 +304,24 @@
       isPlaying = false;
     }
 
-    const musicBtn = document.getElementById('musicBtn');
-    function setBtnPlaying(p){
-      musicBtn.textContent = p ? '⏸ Pause Happy Birthday' : '♫ Play Happy Birthday';
-    }
-    musicBtn.addEventListener('click', async ()=>{
-      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if(audioCtx.state === 'suspended') await audioCtx.resume();
-      if(isPlaying){ stopSong(); setBtnPlaying(false); }
-      else { playSong(); setBtnPlaying(true); }
-    });
+const musicBtn = document.getElementById('musicBtn');
+function setBtnPlaying(p){
+  musicBtn.textContent = p ? '⏸ Pause Happy Birthday' : '♫ Play Happy Birthday';
+}
 
+musicBtn.addEventListener('click', async ()=>{
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') await audioCtx.resume();
+  if(isPlaying){ 
+    stopSong(); 
+    setBtnPlaying(false); 
+  } else { 
+    playSong(); 
+    setBtnPlaying(true); 
+  }
+});
+
+// No autoplay. Just arm the AudioContext so the first click works.
 window.addEventListener('load', () => {
   setBtnPlaying(false);
   const arm = async () => {
@@ -328,18 +335,10 @@ window.addEventListener('load', () => {
     document.addEventListener(ev, arm, { once: true })
   );
 });
-
-
-['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
-
-          }
-        };
-        ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
-      }
-    });
   </script>
 </body>
 </html>
+
 
 
 
