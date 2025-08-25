@@ -199,52 +199,91 @@
     }
 
     function playBalloonPop(){
-      ensureAudio().then(ctx => {
-        const t = ctx.currentTime;
-        const len = 0.15;
-        const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
-        const ch = buf.getChannelData(0);
-        for (let i = 0; i < ch.length; i++){
-          const env = Math.pow(1 - i / ch.length, 2);
-          ch[i] = (Math.random()*2 - 1) * env;
-        }
-        const src = ctx.createBufferSource(); src.buffer = buf;
-        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.setValueAtTime(600, t);
-        const g = ctx.createGain(); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-        src.connect(hp).connect(g).connect(ctx.destination);
-        src.start(t); src.stop(t + len);
-      });
+  ensureAudio().then(ctx => {
+    const t = ctx.currentTime;
+
+    // Noise burst
+    const len = 0.25;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++){
+      // sharper burst envelope
+      const env = Math.pow(1 - i / ch.length, 3);
+      ch[i] = (Math.random()*2 - 1) * env;
     }
+    const noise = ctx.createBufferSource(); noise.buffer = buf;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(1.0, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+    // Pop "snap" oscillator
+    const osc = ctx.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(80, t + 0.18);
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.4, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+    noise.connect(noiseGain).connect(ctx.destination);
+    osc.connect(oscGain).connect(ctx.destination);
+
+    noise.start(t); noise.stop(t + len);
+    osc.start(t); osc.stop(t + 0.25);
+  });
+}
+
 
     function playPartyPopper(){
-      ensureAudio().then(ctx => {
-        const t = ctx.currentTime;
-        // burst
-        const len = 0.35;
-        const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
-        const ch = buf.getChannelData(0);
-        for (let i = 0; i < ch.length; i++){
-          const env = Math.exp(-8 * i / ch.length);
-          ch[i] = (Math.random()*2 - 1) * env;
-        }
-        const src = ctx.createBufferSource(); src.buffer = buf;
-        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.setValueAtTime(1200, t);
-        const g = ctx.createGain(); g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
-        src.connect(hp).connect(g).connect(ctx.destination);
-        src.start(t); src.stop(t + len);
+  ensureAudio().then(ctx => {
+    const t = ctx.currentTime;
 
-        // whistle chirp
-        const osc = ctx.createOscillator(); osc.type = 'triangle';
-        osc.frequency.setValueAtTime(700, t);
-        osc.frequency.exponentialRampToValueAtTime(1600, t + 0.22);
-        const og = ctx.createGain();
-        og.gain.setValueAtTime(0.0001, t);
-        og.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
-        og.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
-        osc.connect(og).connect(ctx.destination);
-        osc.start(t); osc.stop(t + 0.26);
-      });
+    // Crackly burst (like small firecrackers)
+    const burstLen = 0.5;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * burstLen), ctx.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++){
+      // rougher envelope for "crack"
+      const env = Math.exp(-6 * i / ch.length);
+      ch[i] = (Math.random() > 0.9 ? (Math.random()*2-1) : 0) * env; // sparse crackles
     }
+    const burst = ctx.createBufferSource(); burst.buffer = buf;
+    const burstGain = ctx.createGain();
+    burstGain.gain.setValueAtTime(1.0, t);
+    burstGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+
+    // Fizz noise tail
+    const fizzLen = 1.0;
+    const fizzBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * fizzLen), ctx.sampleRate);
+    const fch = fizzBuf.getChannelData(0);
+    for (let i = 0; i < fch.length; i++){
+      const env = Math.exp(-3 * i / fch.length);
+      fch[i] = (Math.random()*2 - 1) * env;
+    }
+    const fizz = ctx.createBufferSource(); fizz.buffer = fizzBuf;
+    const fizzGain = ctx.createGain();
+    fizzGain.gain.setValueAtTime(0.4, t);
+    fizzGain.gain.exponentialRampToValueAtTime(0.001, t + 1);
+
+    // Optional short whistle up-chirp
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.exponentialRampToValueAtTime(1500, t + 0.25);
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.2, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+    burst.connect(burstGain).connect(ctx.destination);
+    fizz.connect(fizzGain).connect(ctx.destination);
+    osc.connect(oscGain).connect(ctx.destination);
+
+    burst.start(t); burst.stop(t + burstLen);
+    fizz.start(t); fizz.stop(t + fizzLen);
+    osc.start(t); osc.stop(t + 0.3);
+  });
+}
+
 
     /* ---------- Balloons ---------- */
     const balloonArea = document.getElementById('balloons');
@@ -376,3 +415,4 @@
   </script>
 </body>
 </html>
+
