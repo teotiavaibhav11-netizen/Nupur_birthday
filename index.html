@@ -315,32 +315,20 @@
       else { playSong(); setBtnPlaying(true); }
     });
 
-// try autoplay; if blocked, only resume on first interaction
-window.addEventListener('load', async () => {
-  try {
+window.addEventListener('load', () => {
+  setBtnPlaying(false);
+  const arm = async () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Attempt autoplay
     if (audioCtx.state === 'suspended') await audioCtx.resume();
-    playSong();
-    setBtnPlaying(true);
-  } catch (_) {
-    // Autoplay not allowed — keep button in idle state
-    setBtnPlaying(false);
-
-    const arm = async () => {
-      try {
-        if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-      } finally {
-        ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
-          document.removeEventListener(ev, arm)
-        );
-      }
-    };
     ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
-      document.addEventListener(ev, arm, { once: true })
+      document.removeEventListener(ev, arm)
     );
-  }
+  };
+  ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+    document.addEventListener(ev, arm, { once: true })
+  );
 });
+
 
 ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
 
@@ -352,5 +340,6 @@ window.addEventListener('load', async () => {
   </script>
 </body>
 </html>
+
 
 
