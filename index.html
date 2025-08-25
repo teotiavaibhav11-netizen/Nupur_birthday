@@ -324,10 +324,14 @@
       }catch(_){
         const arm = async ()=>{
           try{
-            if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-            playSong(); setBtnPlaying(true);
-          }finally{
-            ['pointerdown','keydown','touchstart'].forEach(ev=>document.removeEventListener(ev, arm));
+      // Only resume the context on first interaction.
+        if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+        }finally{
+        ['pointerdown','keydown','touchstart'].forEach(ev=>document.removeEventListener(ev, arm));
+  }
+};
+['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
+
           }
         };
         ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
@@ -336,3 +340,4 @@
   </script>
 </body>
 </html>
+
