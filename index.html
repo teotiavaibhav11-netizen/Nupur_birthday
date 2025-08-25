@@ -91,6 +91,7 @@
   <section id="balloons">
     <div class="container" style="text-align:center">
       <h2 style="margin:0 0 8px; color:#c21873">You can pop the balloons!</h2>
+      
       <div class="controls">
         <button id="spawn5" class="btn">+5 Balloons</button>
         <button id="clearBalloons" class="btn alt">Clear</button>
@@ -117,7 +118,7 @@
       <div class="card">
         <h3 style="margin-top:0; color:#a42a66">A note for you, Nupur 💌</h3>
         <p style="font-size:18px; line-height:1.7">
-          Happy Birthday, Nupur! Even if today feels a little quiet, know that you’re never alone. I’m here, even though thoda sa irritating hoon aur class ke maamle mein maar kha jaata hoon par apne toh apne hote hai na xD, I love you so much. Kabhi nhi pta tha ki school ke baad aise dobaara baat hogi par thankgod huyi. I am really really lucky to have you 💖
+          Happy Birthday, Nupur! Even if today feels a little quiet, know that you’re never alone. I’m here, even though thoda sa irritating hoon aur class ke maamle mein maar kha jaata hoon par apne toh apne hote hai na, I love you so much. Kabhi nhi pta tha ki school ke baad aise dobaara baat hogi par thankgod huyi. Tujhse pyaara aur dil ka saaf inssan nhi hai and i am really really luck to have you 💖
         </p>
         <p>— With love, from your friend who’s right here with you 🫶</p>
       </div>
@@ -190,6 +191,61 @@
       }
     }
 
+    /* ---- SOUND EFFECTS ---- */
+    async function ensureAudio(){
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playBalloonPop(){
+      ensureAudio().then(ctx => {
+        const t = ctx.currentTime;
+        const len = 0.15;
+        const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
+        const ch = buf.getChannelData(0);
+        for (let i = 0; i < ch.length; i++){
+          const env = Math.pow(1 - i / ch.length, 2);
+          ch[i] = (Math.random()*2 - 1) * env;
+        }
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.setValueAtTime(600, t);
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+        src.connect(hp).connect(g).connect(ctx.destination);
+        src.start(t); src.stop(t + len);
+      });
+    }
+
+    function playPartyPopper(){
+      ensureAudio().then(ctx => {
+        const t = ctx.currentTime;
+        // burst
+        const len = 0.35;
+        const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
+        const ch = buf.getChannelData(0);
+        for (let i = 0; i < ch.length; i++){
+          const env = Math.exp(-8 * i / ch.length);
+          ch[i] = (Math.random()*2 - 1) * env;
+        }
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.setValueAtTime(1200, t);
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+        src.connect(hp).connect(g).connect(ctx.destination);
+        src.start(t); src.stop(t + len);
+
+        // whistle chirp
+        const osc = ctx.createOscillator(); osc.type = 'triangle';
+        osc.frequency.setValueAtTime(700, t);
+        osc.frequency.exponentialRampToValueAtTime(1600, t + 0.22);
+        const og = ctx.createGain();
+        og.gain.setValueAtTime(0.0001, t);
+        og.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+        og.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+        osc.connect(og).connect(ctx.destination);
+        osc.start(t); osc.stop(t + 0.26);
+      });
+    }
+
     /* ---------- Balloons ---------- */
     const balloonArea = document.getElementById('balloons');
     function spawnBalloon(){
@@ -202,6 +258,7 @@
       b.addEventListener('click', ()=>{
         const rect = b.getBoundingClientRect();
         confettiBurst(rect.left+rect.width/2, rect.top+rect.height/2, 80);
+        playBalloonPop(); // sound on balloon pop
         b.remove();
       });
       b.addEventListener('animationend', ()=> b.remove());
@@ -214,6 +271,7 @@
     document.getElementById('popper').addEventListener('click', (e)=>{
       const r = e.target.getBoundingClientRect();
       confettiBurst(r.left + r.width/2, r.top, 100);
+      playPartyPopper(); // sound on party popper
     });
     window.addEventListener('load', ()=>{ spawn(8); });
 
@@ -248,7 +306,7 @@
     nextBtn.addEventListener('click', ()=> show(idx+1));
     show(0);
 
-    /* ---------- Happy Birthday Music (~21s) ---------- */
+    /* ---------- Happy Birthday Music (~21s, no autoplay) ---------- */
     let isPlaying = false, masterGain, stopFns = [], autoTimeout;
     function noteFreq(n){ return 440 * Math.pow(2,(n-69)/12); } // MIDI → Hz
 
@@ -314,11 +372,7 @@
       else { playSong(); setBtnPlaying(true); }
     });
 
-    /* -------------- AUTOPLAY REMOVED --------------
-    // (deleted the window.load autoplay + fallback block)
-    ------------------------------------------------ */
+    /* AUTOPLAY REMOVED (no window.load autoplay block) */
   </script>
 </body>
 </html>
-
-
