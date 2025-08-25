@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Birthday, Nupur! 🎉</title>
+  <style>
+    :root{
+      --pink-50:#fff1f7; --pink-100:#ffd6e9; --pink-200:#ffb7d6; --pink-300:#ff93c0; --pink-400:#ff6aa7; --pink-500:#ff3d8b;
+      --gold:#ffcc4d; --ink:#40263a; --shadow:0 10px 30px rgba(255,61,139,.25);
+    }
+    *{box-sizing:border-box}
+    /* global smooth pink gradient */
+    html,body{
+      margin:0; padding:0;
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--ink);
+      background: linear-gradient(180deg, var(--pink-100), var(--pink-200), var(--pink-50));
+      background-attachment: fixed;
+    }
+    a{color:inherit}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+
+    /* Hero (transparent so gradient shows) */
+    header.hero{
+      position:relative; overflow:hidden;
+      background: transparent;
+      padding: 96px 24px 72px; text-align:center;
+    }
+    .title{font-size: clamp(36px, 6vw, 64px); line-height:1.05; margin:0; letter-spacing:.5px; color:#c21873; text-shadow:0 1px 0 #fff, 0 2px 10px rgba(194,24,115,.15)}
+    .subtitle{font-size: clamp(16px, 2.6vw, 22px); color:#6a3353; margin:12px 0 0}
+    .badge{display:inline-flex; gap:8px; align-items:center; background:white; border:2px dashed #ffc1dc; color:#a42a66; padding:8px 14px; border-radius:999px; margin-top:18px; box-shadow:var(--shadow)}
+
+    /* Floating sunflowers in hero (static) */
+    .sunflower{position:absolute; width:64px; height:64px; animation:float 14s ease-in-out infinite; opacity:.85; pointer-events:none}
+    .sunflower.small{width:42px;height:42px; opacity:.75}
+    @keyframes float{0%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-18px) rotate(8deg)} 100%{transform:translateY(0) rotate(0)} }
+
+    /* Sunflower trail (falling) */
+    .sunfall{position:fixed; top:-10vh; pointer-events:none; opacity:.95; filter:drop-shadow(0 2px 6px rgba(0,0,0,.1)); z-index:5;
+      animation:petalFall linear forwards;}
+    @keyframes petalFall{from{transform:translateY(-10vh)} to{transform:translateY(120vh)}}
+
+    /* Balloons */
+    #balloon-layer{position:absolute; inset:0; pointer-events:none;}
+    section#balloons{position:relative; padding:32px 0 48px; background:transparent; overflow:visible}
+    .balloon{position:absolute; width:64px; height:82px; border-radius:42px 42px 48px 48px; background:linear-gradient(180deg, #ffd8ea, #ff8ec2); box-shadow: 0 8px 18px rgba(255,61,139,.25); cursor:pointer; user-select:none;}
+    .balloon::after{content:""; position:absolute; left:50%; bottom:-16px; transform:translateX(-50%); width:2px; height:60px; background:rgba(0,0,0,.08)}
+    .shine{position:absolute; left:12px; top:14px; width:18px; height:28px; border-radius:16px; background:rgba(255,255,255,.65)}
+    @keyframes rise{0%{transform:translateY(20vh) scale(.95)} 100%{transform:translateY(-160vh) scale(1)}}
+
+    .controls{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:12px}
+    .btn{appearance:none; border:0; background: linear-gradient(180deg, #ff8fc2, #ff6aa7); color:white; padding:12px 18px; border-radius:14px; font-weight:700; letter-spacing:.3px; cursor:pointer; box-shadow:var(--shadow);}
+    .btn.alt{background:linear-gradient(180deg, var(--gold), #f4b028); color:#6a3a00}
+
+    /* Gallery */
+    section#gallery{padding:72px 0; background:transparent}
+    .carousel{position:relative; border-radius:22px; overflow:hidden; box-shadow: 0 14px 40px rgba(64,38,58,.18); background:#fff}
+    .carousel img{display:block; width:100%; height:540px; object-fit:cover}
+    .nav{position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; padding:0 8px}
+    .nav button{background:rgba(255,255,255,.75); border:0; width:44px; height:44px; border-radius:50%; font-size:22px; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.15)}
+    .dots{display:flex; gap:8px; justify-content:center; margin-top:14px}
+    .dot{width:10px;height:10px;border-radius:999px;background:#ffd6e9; cursor:pointer}
+    .dot.active{background:#ff6aa7}
+
+    /* Message */
+    section#message{padding:72px 0 96px; background:transparent}
+    .card{background:#fff; border:1px solid #ffe3f0; padding:28px; border-radius:20px; box-shadow:var(--shadow)}
+    footer{padding:28px 0 56px; text-align:center; color:#87486b}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="sunflower" style="left:6%; top:18%"></div>
+    <div class="sunflower small" style="right:6%; top:10%"></div>
+
+    <div class="container">
+      <h1 class="title">🎉 Happy Birthday, Nupur! 🎉</h1>
+      <p class="subtitle">You may be celebrating alone, but I’m right here with you and always will be. 💛</p>
+      <div class="badge">⚖&nbsp; My Brilliant Lawyer • I am super Proud of You!</div>
+      <div class="controls" style="margin-top:26px">
+        <button id="spawn10" class="btn">Release Balloons</button>
+        <button id="popper" class="btn alt">🎉 Party Popper</button>
+        <button id="musicBtn" class="btn" title="Play/Pause Happy Birthday">♫ Play Happy Birthday</button>
+      </div>
+    </div>
+
+    <canvas id="balloon-layer"></canvas>
+  </header>
+
+  <section id="balloons">
+    <div class="container" style="text-align:center">
+      <h2 style="margin:0 0 8px; color:#c21873">You can pop the balloons!</h2>
+      
+      <div class="controls">
+        <button id="spawn5" class="btn">+5 Balloons</button>
+        <button id="clearBalloons" class="btn alt">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <div class="container">
+      <h2 style="text-align:center; color:#c21873; margin-top:0">Some of my fav pictures of yours!</h2>
+      <div class="carousel" id="carousel" aria-live="polite">
+        <img id="slide" src="nupur1.jpg" alt="Nupur photo" loading="eager" />
+        <div class="nav">
+          <button id="prev" aria-label="Previous">‹</button>
+          <button id="next" aria-label="Next">›</button>
+        </div>
+      </div>
+      <div class="dots" id="dots" aria-label="Slide dots"></div>
+    </div>
+  </section>
+
+  <section id="message">
+    <div class="container">
+      <div class="card">
+        <h3 style="margin-top:0; color:#a42a66">A note for you, Nupur 💌</h3>
+        <p style="font-size:18px; line-height:1.7">
+          Happy Birthday, Nupur! Even if today feels a little quiet, know that you’re never alone. I’m here, even though thoda sa irritating hoon aur class ke maamle mein maar kha jaata hoon par apne toh apne hote hai na, I love you so much. Kabhi nhi pta tha ki school ke baad aise dobaara baat hogi par thankgod huyi. Tujhse pyaara aur dil ka saaf inssan nhi hai and i am really really luck to have you 💖
+        </p>
+        <p>— With love, from your friend who’s right here with you 🫶</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Made with ❤ by Vaibhav • Have the happiest year ahead, Nupur!</footer>
+
+  <script>
+    /* ---------- Sunflower SVG ---------- */
+    function svgSunflower(){
+      return `
+        <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+          <defs>
+            <radialGradient id="p" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#6b3d13"/>
+              <stop offset="70%" stop-color="#5a2e0a"/>
+              <stop offset="100%" stop-color="#3e1f07"/>
+            </radialGradient>
+          </defs>
+          <g transform="translate(50 50)">
+            ${Array.from({length:16}).map((_,i)=>`<ellipse rx="10" ry="30" fill="#ffcc4d" transform="rotate(${i*22.5}) translate(0,-28)"/>`).join('')}
+            <circle r="18" fill="url(#p)"/>
+            <circle r="8" fill="#2b1605" opacity=".35"/>
+          </g>
+        </svg>`;
+    }
+    document.querySelectorAll('.sunflower').forEach(el=>{ el.innerHTML = svgSunflower(); });
+
+    /* ---------- Sunflower Trail ---------- */
+    function spawnSunflower(){
+      const d = document.createElement('div');
+      d.className = 'sunfall';
+      d.style.left = Math.random()*100 + 'vw';
+      d.style.width = (36 + Math.random()*36) + 'px';
+      d.style.height = d.style.width;
+      d.style.animationDuration = (10 + Math.random()*10) + 's';
+      d.innerHTML = svgSunflower();
+      document.body.appendChild(d);
+      d.addEventListener('animationend', ()=> d.remove());
+    }
+    setInterval(spawnSunflower, 900);
+    for(let i=0;i<8;i++) setTimeout(spawnSunflower, i*150);
+
+    /* ---------- Confetti ---------- */
+    const confettiColors = ['#ff6aa7','#ffb7d6','#ffe27a','#ffd24a','#fff1f7','#c21873'];
+    let audioCtx; // shared audio context for confetti + music
+
+    function confettiBurst(x, y, amount = 80){
+      for(let i=0;i<amount;i++){
+        const piece = document.createElement('div');
+        const size = 4 + Math.random()*6;
+        piece.style.cssText = `
+          position:fixed; left:${x}px; top:${y}px; width:${size}px; height:${size*0.6}px;
+          background:${confettiColors[Math.floor(Math.random()*confettiColors.length)]}; pointer-events:none;
+          border-radius:2px; z-index:9999;`;
+        document.body.appendChild(piece);
+        let life = 0;
+        let xPos = x, yPos = y;
+        const dx = (Math.random()*2-1)*5;
+        const dy = (Math.random()-0.5)*8;
+        const timer = setInterval(()=>{
+          life++;
+          xPos += dx; yPos += dy + life*0.2;
+          piece.style.left = xPos + 'px';
+          piece.style.top = yPos + 'px';
+          piece.style.opacity = String(Math.max(0, 1 - life/90));
+          if (life>90){ clearInterval(timer); piece.remove(); }
+        }, 16);
+      }
+    }
+
+    /* ---------- Balloons ---------- */
+    const balloonArea = document.getElementById('balloons');
+    function spawnBalloon(){
+      const b = document.createElement('div');
+      b.className='balloon';
+      b.style.left = (Math.random()*(window.innerWidth-80)+10) + 'px';
+      b.style.animation = `rise ${12 + Math.random()*10}s linear forwards`;
+      b.style.bottom = '-120px';
+      b.innerHTML = '<div class="shine"></div>';
+      b.addEventListener('click', ()=>{
+        const rect = b.getBoundingClientRect();
+        confettiBurst(rect.left+rect.width/2, rect.top+rect.height/2, 80);
+        b.remove();
+      });
+      b.addEventListener('animationend', ()=> b.remove());
+      balloonArea.appendChild(b);
+    }
+    function spawn(n){ for(let i=0;i<n;i++) setTimeout(spawnBalloon, i*200); }
+    document.getElementById('spawn5').addEventListener('click', ()=>spawn(5));
+    document.getElementById('spawn10').addEventListener('click', ()=>spawn(10));
+    document.getElementById('clearBalloons').addEventListener('click', ()=>{ document.querySelectorAll('.balloon').forEach(b=>b.remove()); });
+    document.getElementById('popper').addEventListener('click', (e)=>{
+      const r = e.target.getBoundingClientRect();
+      confettiBurst(r.left + r.width/2, r.top, 100);
+    });
+    window.addEventListener('load', ()=>{ spawn(8); });
+
+    /* ---------- Gallery (multi-image) ---------- */
+    const imgs = [
+      'nupur1.jpg','nupur2.jpg','nupur3.jpg','nupur4.jpg','nupur5.jpg',
+      'nupur6.jpg','nupur7.jpg','nupur8.jpg','nupur9.jpg','nupur10.jpg',
+      'nupur11.jpg','nupur12.jpg','nupur13.jpg','nupur14.jpg'
+    ];
+    const slide = document.getElementById('slide');
+    const dotsWrap = document.getElementById('dots');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    let idx = 0;
+
+    function renderDots(){
+      dotsWrap.innerHTML = '';
+      imgs.forEach((_,i)=>{
+        const d=document.createElement('div');
+        d.className='dot'+(i===idx?' active':'');
+        d.addEventListener('click', ()=> show(i));
+        dotsWrap.appendChild(d);
+      });
+    }
+    function show(i){
+      idx=(i+imgs.length)%imgs.length;
+      slide.src = imgs[idx];
+      slide.alt = `Photo ${idx+1} of ${imgs.length}`;
+      renderDots();
+    }
+    prevBtn.addEventListener('click', ()=> show(idx-1));
+    nextBtn.addEventListener('click', ()=> show(idx+1));
+    show(0);
+
+    /* ---------- Happy Birthday Music (~21s, auto-start if allowed) ---------- */
+    let isPlaying = false, masterGain, stopFns = [], autoTimeout;
+    function noteFreq(n){ return 440 * Math.pow(2,(n-69)/12); } // MIDI → Hz
+
+    const melody = [
+      [67,1],[67,1],[69,2],[67,2],[72,2],[71,4],
+      [67,1],[67,1],[69,2],[67,2],[74,2],[72,4],
+      [67,1],[67,1],[79,2],[76,2],[72,2],[71,2],[69,4],
+      [77,1],[77,1],[76,2],[72,2],[74,2],[72,6]
+    ];
+    const tempo = 360; // ms per beat => ~21s total
+    const totalDuration = melody.reduce((a,[,len])=>a+len*tempo,0)/1000;
+
+    function playSong(){
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx;
+      stopSong();
+
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0.15;
+      masterGain.connect(ctx.destination);
+
+      let t = ctx.currentTime + 0.05;
+      melody.forEach(([midi,len])=>{
+        if(midi===0){ t += len*tempo/1000; return; }
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = noteFreq(midi);
+        const dur = len*tempo/1000;
+
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(1.0, t + Math.min(0.04, dur*0.15));
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur - Math.min(0.04, dur*0.2));
+
+        osc.connect(g).connect(masterGain);
+        osc.start(t);
+        osc.stop(t + dur);
+        stopFns.push(()=>{ try{ osc.stop(); }catch{} });
+        t += dur;
+      });
+
+      clearTimeout(autoTimeout);
+      autoTimeout = setTimeout(()=>{ stopSong(); setBtnPlaying(false); }, totalDuration*1000 + 200);
+      isPlaying = true;
+    }
+
+    function stopSong(){
+      stopFns.forEach(fn=>fn());
+      stopFns = [];
+      if(masterGain){ try{ masterGain.disconnect(); }catch{} }
+      clearTimeout(autoTimeout);
+      isPlaying = false;
+    }
+
+    const musicBtn = document.getElementById('musicBtn');
+    function setBtnPlaying(p){
+      musicBtn.textContent = p ? '⏸ Pause Happy Birthday' : '♫ Play Happy Birthday';
+    }
+    musicBtn.addEventListener('click', async ()=>{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') await audioCtx.resume();
+      if(isPlaying){ stopSong(); setBtnPlaying(false); }
+      else { playSong(); setBtnPlaying(true); }
+    });
+
+    // try autoplay; if blocked, start on first interaction
+    window.addEventListener('load', async ()=>{
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state === 'suspended') await audioCtx.resume();
+        playSong(); setBtnPlaying(true);
+      }catch(_){
+        const arm = async ()=>{
+          try{
+            if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+            playSong(); setBtnPlaying(true);
+          }finally{
+            ['pointerdown','keydown','touchstart'].forEach(ev=>document.removeEventListener(ev, arm));
+          }
+        };
+        ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
+      }
+    });
+  </script>
+</body>
+</html>
