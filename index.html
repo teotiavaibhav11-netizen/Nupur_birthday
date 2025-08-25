@@ -315,21 +315,33 @@
       else { playSong(); setBtnPlaying(true); }
     });
 
-    // try autoplay; if blocked, start on first interaction
-    window.addEventListener('load', async ()=>{
-      try{
-        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if(audioCtx.state === 'suspended') await audioCtx.resume();
-        playSong(); setBtnPlaying(true);
-      }catch(_){
-        const arm = async ()=>{
-          try{
-      // Only resume the context on first interaction.
-        if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-        }finally{
-        ['pointerdown','keydown','touchstart'].forEach(ev=>document.removeEventListener(ev, arm));
+// try autoplay; if blocked, only resume on first interaction
+window.addEventListener('load', async () => {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Attempt autoplay
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    playSong();
+    setBtnPlaying(true);
+  } catch (_) {
+    // Autoplay not allowed — keep button in idle state
+    setBtnPlaying(false);
+
+    const arm = async () => {
+      try {
+        if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+      } finally {
+        ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+          document.removeEventListener(ev, arm)
+        );
+      }
+    };
+    ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, arm, { once: true })
+    );
   }
-};
+});
+
 ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, arm, {once:true}));
 
           }
@@ -340,4 +352,5 @@
   </script>
 </body>
 </html>
+
 
